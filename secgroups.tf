@@ -1,7 +1,7 @@
 resource "aws_security_group" "SG_SSH_IN_from_anywhere" {
   name        = "${var.resource_prefix}_${terraform.workspace}_SG_SSH_IN_from_anywhere${var.resource_suffix}"
   description = "Allow SSH inbound traffic from anywhere for Project ${var.project_name}. env: _${terraform.workspace}_"
-  vpc_id      = "${module.baseInfra.vpc_id}"
+  vpc_id      = "${var.vpc_id}"
 
   ingress {
     from_port   = 22
@@ -32,7 +32,7 @@ resource "aws_security_group" "SG_Ping_enable" {
   count       = "${var.pingable ? 1 : 0}"
   name        = "${var.resource_prefix}_${terraform.workspace}_SG_Ping_enable${var.resource_suffix}"
   description = "Allow PING fuer Projekt ${var.project_name}. env: _${terraform.workspace}_"
-  vpc_id      = "${module.baseInfra.vpc_id}"
+  vpc_id      = "${var.vpc_id}"
 
   ingress {
     from_port   = -1
