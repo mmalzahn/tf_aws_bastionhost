@@ -10,11 +10,11 @@ resource "aws_instance" "bastionhost" {
   associate_public_ip_address          = "true"
   volume_tags                          = "${var.resource_tags}"
   key_name                             = "${var.debug_on ? var.aws_key_name : ""}"
-  depends_on                           = ["aws_iam_role.bastionhostRole"]
+ # depends_on                           = ["aws_iam_role.bastionhostRole"]
 
   vpc_security_group_ids = [
     "${aws_security_group.SG_SSH_IN_from_anywhere.id}",
-    "${aws_security_group.SG_Ping_enable}",
+    "${aws_security_group.SG_Ping_enable.id}",
   ]
 
   lifecycle {
@@ -53,36 +53,6 @@ data "template_file" "bastionhostUserdata" {
     prefix    = "keys/"
     topic_arn = "${local.adminInfoTopic}"
   }
-}
-
-resource "aws_security_group" "SG_SSH_IN_from_anywhere" {
-  name        = "${var.resource_prefix}SG_SSH_IN_from_anywhere${var.resource_prefix}"
-  description = "Allow SSH inbound traffic from anywhere for Project ${var.projectId}"
-  vpc_id      = "${aws_vpc.mainvpc.id}"
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 65534
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  lifecycle {
-    ignore_changes = ["tags.tf_created"]
-  }
-
-  tags = "${merge(var.resource_tags,
-            map(
-              "Name", "${var.resource_prefix}_${terraform.workspace}_SG_SSH_IN_from_anywhere${var.resource_suffix}"
-              )
-              )}"
 }
 
 # resource "aws_route53_record" "bastionhostdns" {
