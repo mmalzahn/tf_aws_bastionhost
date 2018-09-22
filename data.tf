@@ -1,22 +1,12 @@
-# locals {
-#   common_tags {
-#     responsible     = "${var.tag_responsibel}"
-#     tf_managed      = "1"
-#     tf_project      = "dca:${terraform.workspace}:${replace(var.project_name," ","")}"
-#     tf_project_name = "DCA_${replace(var.project_name," ","_")}_${terraform.workspace}"
-#     tf_environment  = "${terraform.workspace}"
-#     tf_created      = "${timestamp()}"
-#     tf_runtime      = "${var.laufzeit_tage}"
-#     tf_responsible  = "${var.tag_responsibel}"
-#     tf_configId     = "${local.projectId}"
-#   }
+data "aws_ami" "bastionhostPackerAmi" {
+  most_recent = true
+  owners = ["amazon"]
+  filter {
+    name ="name"
+    values =["amzn2-ami-hvm-2.*-x86_64-gp2"]
+  }
+}
 
-#   projectId       = "${lower(random_string.projectId.result)}"
-#   resource_prefix = "tf-${random_string.projectId.result}-${terraform.workspace}-"
-# }
-# data "aws_route53_zone" "dca_poc_domain" {
-#   name = "${data.terraform_remote_state.baseInfra.dns_name}"
-# }
 # data "aws_iam_policy_document" "instance-assume-role-policy" {
 #   statement {
 #     actions = ["sts:AssumeRole"]
@@ -25,14 +15,6 @@
 #       type        = "Service"
 #       identifiers = ["ec2.amazonaws.com"]
 #     }
-#   }
-# }
-# data "aws_ami" "bastionhostPackerAmi" {
-#   most_recent = true
-#   owners = ["amazon"]
-#   filter {
-#     name ="name"
-#     values =["amzn2-ami-hvm-2.*-x86_64-gp2"]
 #   }
 # }
 # resource "random_string" "projectId" {
