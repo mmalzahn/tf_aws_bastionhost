@@ -4,9 +4,9 @@ resource "aws_instance" "bastionhost" {
   instance_type                        = "${var.instance_type}"
   subnet_id                            = "${var.subnet_id}"
   placement_group                      = "${aws_placement_group.bastionhostpgroup.id}"
-  iam_instance_profile                 = "${aws_iam_instance_profile.bastionIamProf.name}"
+#  iam_instance_profile                 = "${aws_iam_instance_profile.bastionIamProf.name}"
   instance_initiated_shutdown_behavior = "terminate"
-  user_data                            = "${data.template_file.bastionhostUserdata.rendered}"
+#  user_data                            = "${data.template_file.bastionhostUserdata.rendered}"
   associate_public_ip_address          = "true"
   volume_tags                          = "${var.resource_tags}"
   key_name                             = "${var.debug_on ? var.aws_key_name : ""}"
@@ -44,16 +44,16 @@ resource "aws_placement_group" "bastionhostpgroup" {
   strategy = "spread"
 }
 
-data "template_file" "bastionhostUserdata" {
-  template = "${file("tpl/bastioninstall.tpl")}"
+# data "template_file" "bastionhostUserdata" {
+#   template = "${file("tpl/bastioninstall.tpl")}"
 
-  vars {
-    region    = "${aws_s3_bucket.pubkeyStorageBucket.region}"
-    bucket    = "${aws_s3_bucket.pubkeyStorageBucket.id}"
-    prefix    = "keys/"
-    topic_arn = "${local.adminInfoTopic}"
-  }
-}
+#   vars {
+#     region    = "${aws_s3_bucket.pubkeyStorageBucket.region}"
+#     bucket    = "${aws_s3_bucket.pubkeyStorageBucket.id}"
+#     prefix    = "keys/"
+#     topic_arn = "${local.adminInfoTopic}"
+#   }
+# }
 
 # resource "aws_route53_record" "bastionhostdns" {
 #   count           = "${var.optimal_design ? var.az_count : 1}"
