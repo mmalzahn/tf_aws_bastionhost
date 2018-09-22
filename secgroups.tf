@@ -1,139 +1,60 @@
-# resource "aws_security_group" "SG_DockerSocket_IN_from_Bastionhost" {
-#   name        = "${local.resource_prefix}SG_DockerSocket_IN_from_Bastionhost"
-#   description = "Allow SSH inbound traffic from Bastionhost for Project ${lookup(local.common_tags,"tf_project_name")}"
-#   vpc_id      = "${data.terraform_remote_state.baseInfra.vpc_id}"
+resource "aws_security_group" "SG_SSH_IN_from_anywhere" {
+  name        = "${var.resource_prefix}_${terraform.workspace}_SG_SSH_IN_from_anywhere${var.resource_suffix}"
+  description = "Allow SSH inbound traffic from anywhere for Project ${var.project_name}. env: _${terraform.workspace}_"
+  vpc_id      = "${module.baseInfra.vpc_id}"
 
-#   ingress {
-#     from_port       = 2375
-#     to_port         = 2376
-#     protocol        = "tcp"
-#     security_groups = ["${data.terraform_remote_state.baseInfra.bastion_sg}"]
-#   }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-#   egress {
-#     from_port   = 0
-#     to_port     = 65534
-#     protocol    = "tcp"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
+  egress {
+    from_port   = 0
+    to_port     = 65534
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-#   lifecycle {
-#     ignore_changes = ["tags.tf_created"]
-#   }
+  lifecycle {
+    ignore_changes = ["tags.tf_created"]
+  }
 
-#   tags = "${merge(local.common_tags,
-#              map(
-#                "Name", "${local.resource_prefix}SG_DockerSocket_IN_from_Bastionhost"
-#                )
-#                )}"
-# }
+  tags = "${merge(var.resource_tags,
+             map(
+               "Name", "${var.resource_prefix}_${terraform.workspace}_SG_DockerSocket_IN_from_Bastionhost${var.resource_suffix}"
+               )
+               )}"
+}
 
-# resource "aws_security_group" "SG_DockerSwarmCom_from_backendtiersubnets" {
-#   name        = "${local.resource_prefix}SG_DockerSwarmCom_from_backendtiersubnets"
-#   description = "Allow Docker Swarm Communication inbound traffic from Subnets for Project ${lookup(local.common_tags,"tf_project_name")}"
-#   vpc_id      = "${data.terraform_remote_state.baseInfra.vpc_id}"
+resource "aws_security_group" "SG_Ping_enable" {
+  count       = "${var.pingable ? 1 : 0}"
+  name        = "${var.resource_prefix}_${terraform.workspace}_SG_Ping_enable${var.resource_suffix}"
+  description = "Allow PING fuer Projekt ${var.project_name}. env: _${terraform.workspace}_"
+  vpc_id      = "${module.baseInfra.vpc_id}"
 
-#   ingress {
-#     description ="Docker Swarm cluster management"
-#     from_port   = 2377
-#     to_port     = 2377
-#     protocol    = "tcp"
-#     cidr_blocks = ["${data.terraform_remote_state.baseInfra.subnet_cidrblocks_backend}"]
-#   }
+  ingress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-#   ingress {
-#     description ="Docker Swarm communication between the nodes (TCP)"
-#     from_port   = 7946
-#     to_port     = 7946
-#     protocol    = "tcp"
-#     cidr_blocks = ["${data.terraform_remote_state.baseInfra.subnet_cidrblocks_backend}"]
-#   }
+  egress {
+    from_port   = -1
+    to_port     = -1
+    protocol    = "icmp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-#   ingress {
-#     description = "Docker Swarm communication between the nodes (UDP)"
-#     from_port   = 7946
-#     to_port     = 7946
-#     protocol    = "udp"
-#     cidr_blocks = ["${data.terraform_remote_state.baseInfra.subnet_cidrblocks_backend}"]
-#   }
+  lifecycle {
+    ignore_changes = ["tags.tf_created"]
+  }
 
-#   ingress {
-#     description = "Docker Overlaynetworktraffic"
-#     from_port   = 4789
-#     to_port     = 4789
-#     protocol    = "udp"
-#     cidr_blocks = ["${data.terraform_remote_state.baseInfra.subnet_cidrblocks_backend}"]
-#   }
-
-#   egress {
-#     from_port   = 0
-#     to_port     = 65534
-#     protocol    = "tcp"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-
-#   lifecycle {
-#     ignore_changes = ["tags.tf_created"]
-#   }
-
-#   tags = "${merge(local.common_tags,
-#              map(
-#                "Name", "${local.resource_prefix}SG_DockerSwarmCom_from_backendtiersubnets"
-#                )
-#                )}"
-# }
-
-# resource "aws_security_group" "SG_DockerSwarmCom_from_dmztiersubnets" {
-#   name        = "${local.resource_prefix}SG_DockerSwarmCom_from_dmztiersubnets"
-#   description = "Allow Docker Swarm Communication inbound traffic from Subnets for Project ${lookup(local.common_tags,"tf_project_name")}"
-#   vpc_id      = "${data.terraform_remote_state.baseInfra.vpc_id}"
-
-#   ingress {
-#     description ="Docker Swarm cluster management"
-#     from_port   = 2377
-#     to_port     = 2377
-#     protocol    = "tcp"
-#     cidr_blocks = ["${data.terraform_remote_state.baseInfra.subnet_cidrblocks_dmz}"]
-#   }
-
-#   ingress {
-#     description ="Docker Swarm communication between the nodes (TCP)"
-#     from_port   = 7946
-#     to_port     = 7946
-#     protocol    = "tcp"
-#     cidr_blocks = ["${data.terraform_remote_state.baseInfra.subnet_cidrblocks_dmz}"]
-#   }
-
-#   ingress {
-#     description = "Docker Swarm communication between the nodes (UDP)"
-#     from_port   = 7946
-#     to_port     = 7946
-#     protocol    = "udp"
-#     cidr_blocks = ["${data.terraform_remote_state.baseInfra.subnet_cidrblocks_dmz}"]
-#   }
-
-#   ingress {
-#     description = "Docker Overlaynetworktraffic"
-#     from_port   = 4789
-#     to_port     = 4789
-#     protocol    = "udp"
-#     cidr_blocks = ["${data.terraform_remote_state.baseInfra.subnet_cidrblocks_dmz}"]
-#   }
-
-#   egress {
-#     from_port   = 0
-#     to_port     = 65534
-#     protocol    = "tcp"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-
-#   lifecycle {
-#     ignore_changes = ["tags.tf_created"]
-#   }
-
-#   tags = "${merge(local.common_tags,
-#              map(
-#                "Name", "${local.resource_prefix}SG_DockerSwarmCom_from_dmztiersubnets"
-#                )
-#                )}"
-# }
+  tags = "${merge(var.resource_tags,
+            map(
+              "Name", "${var.resource_prefix}_${terraform.workspace}_SG_Ping_enable${var.resource_suffix}"
+              )
+              )}"
+}
